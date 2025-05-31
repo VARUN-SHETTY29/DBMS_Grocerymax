@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}{{ super() }} - {{ title }}{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-sky-700">{{ title }}</h1>
+    <a href="{{ url_for('add_customer_route') }}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded shadow transition-colors">
+        Add New Customer
+    </a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category_flash, message in messages %}
+            <div class="p-4 mb-4 text-sm rounded-lg
+                        {% if category_flash == 'error' %}bg-red-100 text-red-700 border border-red-300
+                        {% elif category_flash == 'success' %}bg-green-100 text-green-700 border border-green-300
+                        {% else %}bg-blue-100 text-blue-700 border border-blue-300{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% if customers %}
+<div class="bg-white shadow-md rounded-lg overflow-x-auto">
+    <table class="min-w-full leading-normal">
+        <thead>
+            <tr class="bg-slate-200 text-left text-slate-600 uppercase text-sm">
+                <th class="px-5 py-3 border-b-2 border-slate-300">ID</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300">Full Name</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300">Email</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300">Phone</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300">Address</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300">Registered</th>
+                <th class="px-5 py-3 border-b-2 border-slate-300 text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="text-slate-700">
+            {% for customer in customers %}
+            <tr class="hover:bg-slate-50 border-b border-slate-200">
+                <td class="px-5 py-4 text-sm">{{ customer.CustomerID }}</td>
+                <td class="px-5 py-4 text-sm font-medium">{{ customer.FirstName }} {{ customer.LastName if customer.LastName else '' }}</td>
+                <td class="px-5 py-4 text-sm">{{ customer.Email if customer.Email else 'N/A' }}</td>
+                <td class="px-5 py-4 text-sm">{{ customer.PhoneNumber if customer.PhoneNumber else 'N/A' }}</td>
+                <td class="px-5 py-4 text-xs max-w-xs truncate" title="{{ customer.Address if customer.Address else '' }}">{{ customer.Address if customer.Address else 'N/A' }}</td>
+                <td class="px-5 py-4 text-sm">{{ customer.RegistrationDate.strftime('%Y-%m-%d') if customer.RegistrationDate else 'N/A' }}</td>
+                <td class="px-5 py-4 text-center whitespace-nowrap">
+                    <a href="{{ url_for('edit_customer_route', customer_id=customer.CustomerID) }}" class="text-sky-600 hover:text-sky-800 font-medium mr-3 px-2 py-1 rounded hover:bg-sky-100">Edit</a>
+                    <form action="{{ url_for('delete_customer_route', customer_id=customer.CustomerID) }}" method="POST" class="inline-block" onsubmit='return confirm("Are you sure you want to delete customer: {{ customer.FirstName }} {{ (customer.LastName if customer.LastName else "")|replace("\"", "&quot;")|replace("\'", "&#39;") }}? Sales records will be disassociated.");'>
+                        <button type="submit" class="text-red-600 hover:text-red-800 font-medium px-2 py-1 rounded hover:bg-red-100">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white p-8 rounded-lg shadow text-center">
+    <p class="text-lg text-slate-500">No customers found.</p>
+    <p class="mt-4">
+         <a href="{{ url_for('add_customer_route') }}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded shadow transition-colors">
+            Add the First Customer
+        </a>
+    </p>
+</div>
+{% endif %}
+{% endblock %}
